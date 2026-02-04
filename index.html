@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QR Rewards – Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body{margin:0;font-family:Arial;background:#f4f4f4}
+    header{background:#128C7E;color:#fff;padding:16px;text-align:center}
+    nav{display:flex;background:#075E54}
+    nav button{flex:1;padding:12px;border:none;background:#075E54;color:#fff}
+    nav button.active{background:#25D366;color:#000}
+    .container{padding:15px}
+    .card{background:#fff;border-radius:14px;padding:15px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,.12)}
+    .hidden{display:none}
+    .points{font-size:26px;color:#25D366;font-weight:bold;text-align:center}
+    button.main{width:100%;padding:14px;background:#25D366;color:#fff;border:none;border-radius:10px;font-size:16px}
+    input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin:6px 0}
+    .note{font-size:12px;color:#666;text-align:center}
+
+    /* Camera box */
+    .camera-box{
+      width:100%;max-width:320px;margin:10px auto;
+      border-radius:14px;overflow:hidden;background:#000
+    }
+    video{width:100%;height:auto}
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h2>QR Rewards</h2>
+  <p>Camera Scan • Rewards (Demo)</p>
+</header>
+
+<nav>
+  <button id="tabScan" class="active" onclick="show('scan')">Scan</button>
+  <button id="tabWallet" onclick="show('wallet')">Wallet</button>
+  <button id="tabRedeem" onclick="show('redeem')">Redeem</button>
+</nav>
+
+<div class="container">
+
+  <!-- SCAN -->
+  <div id="scan" class="card">
+    <p class="points">Points: <span id="points">500</span></p>
+
+    <div class="camera-box hidden" id="cameraBox">
+      <video id="video" autoplay playsinline></video>
+    </div>
+
+    <button class="main" onclick="openCamera()">Scan QR</button>
+    <p class="note">Camera opens only if you allow permission</p>
+  </div>
+
+  <!-- WALLET -->
+  <div id="wallet" class="card hidden">
+    <h3>Payment Wallet (Demo)</h3>
+    <select id="method">
+      <option>EasyPaisa</option>
+      <option>JazzCash</option>
+    </select>
+    <input id="number" placeholder="Enter mobile / account number">
+    <button class="main" onclick="saveWallet()">Save Wallet</button>
+    <p class="note">Saved locally (demo)</p>
+  </div>
+
+  <!-- REDEEM -->
+  <div id="redeem" class="card hidden">
+    <h3>Redeem (Demo)</h3>
+    <button class="main" onclick="redeem()">Request Redeem</button>
+    <p class="note">No real payment</p>
+  </div>
+
+</div>
+
+<script>
+  // Tabs
+  function show(p){
+    ['scan','wallet','redeem'].forEach(x=>{
+      document.getElementById(x).classList.add('hidden');
+      document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).classList.remove('active');
+    });
+    document.getElementById(p).classList.remove('hidden');
+    document.getElementById('tab'+p.charAt(0).toUpperCase()+p.slice(1)).classList.add('active');
+  }
+
+  // Points
+  let points = localStorage.getItem('points') || 500;
+  document.getElementById('points').innerText = points;
+
+  // Camera
+  let stream;
+  async function openCamera(){
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
+      });
+      const video = document.getElementById('video');
+      video.srcObject = stream;
+      document.getElementById('cameraBox').classList.remove('hidden');
+
+      // Demo reward after 3 sec
+      setTimeout(()=>{
+        points = parseInt(points) + 50;
+        localStorage.setItem('points', points);
+        document.getElementById('points').innerText = points;
+        alert('QR detected ✅ +50 points (Demo)');
+      },3000);
+
+    }catch(err){
+      alert('Camera permission denied ❌');
+    }
+  }
+
+  // Wallet
+  function saveWallet(){
+    const method = methodSel.value = document.getElementById('method').value;
+    const num = document.getElementById('number').value;
+    if(num.length < 10){ alert('Invalid number'); return; }
+    localStorage.setItem('walletMethod', method);
+    localStorage.setItem('walletNumber', num);
+    alert('Wallet saved ✅ (Demo)');
+  }
+
+  function redeem(){
+    if(!localStorage.getItem('walletNumber')){
+      alert('Save wallet first');
+      show('wallet'); return;
+    }
+    alert('Redeem requested ✅ (Demo)');
+  }
+</script>
+
+</body>
+</html>
